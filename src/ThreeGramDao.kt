@@ -25,7 +25,11 @@ class ThreeGramDao(databaseUrl: String, databaseUser: String, databasePassword: 
         return transaction {
             val select = ngramsTable.select { ngramsTable.id eq position }.limit(1)
             select.map {
-                ThreeGram(it.get(ngramsTable.id), it.get(ngramsTable.n1), it.get(ngramsTable.n2), it.get(ngramsTable.n3))
+                ThreeGram(it[ngramsTable.id],
+                    it[ngramsTable.n1],
+                    it[ngramsTable.n2],
+                    it[ngramsTable.n3]
+                )
             }.first()
         }
     }

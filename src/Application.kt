@@ -11,6 +11,7 @@ import io.ktor.http.content.*
 import io.ktor.util.KtorExperimentalAPI
 import org.slf4j.event.Level
 
+
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 @KtorExperimentalAPI
@@ -20,8 +21,14 @@ fun Application.module(testing: Boolean = false) {
     val threeGramDao = ThreeGramDao(environment.config.property("ktor.database.url").getString(),
         environment.config.property("ktor.database.user").getString(),
         environment.config.property("ktor.database.password").getString())
-    var position = Integer.parseInt(environment.config.propertyOrNull("ktor.database.position")?.getString())
+    val position = NgramPosition(
+        Integer.parseInt(environment.config.propertyOrNull("ktor.database.position")?.getString())
+    )
     val gson = Gson()
+    AdvanceDaemon(
+        Integer.parseInt(environment.config.propertyOrNull("ktor.daemon.updateFrequencySeconds")?.getString()),
+        position
+    ).run()
 
     install(CORS) {
         anyHost()
@@ -36,9 +43,13 @@ fun Application.module(testing: Boolean = false) {
         }
 
         get("/ngram") {
-            val threeGram = threeGramDao.getThreeGram(position)
-            position += 1
+            val threeGram = threeGramDao.getThreeGram(position.get())
             call.respondText(gson.toJson(threeGram), contentType = ContentType.Application.Json)
+        }
+
+        post("/ngram/advance") {
+            position.advance()
+            call.respond(HttpStatusCode.NoContent)
         }
 
         // Static feature. Try to access `/static/ktor_logo.svg`
