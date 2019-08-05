@@ -52,6 +52,12 @@ fun Application.module(testing: Boolean = false) {
             call.respond(HttpStatusCode.NoContent)
         }
 
+        post("/ngram/{id}/vote") {
+            val ngramId = call.parameters["id"]
+            threeGramDao.upvote(Integer.parseInt(ngramId))
+            call.respond(HttpStatusCode.NoContent)
+        }
+
         // Static feature. Try to access `/static/ktor_logo.svg`
         static("/static") {
             resources("static")
