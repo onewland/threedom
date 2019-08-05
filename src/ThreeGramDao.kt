@@ -21,14 +21,10 @@ class ThreeGramDao(databaseUrl: String, databaseUser: String, databasePassword: 
 
     fun getThreeGram(position: Int): ThreeGram {
         return transaction {
-            val select = NgramsTable.select { NgramsTable.id eq position }.limit(1)
-            select.map {
-                ThreeGram(it[NgramsTable.id],
-                    it[NgramsTable.n1],
-                    it[NgramsTable.n2],
-                    it[NgramsTable.n3]
-                )
-            }.first()
+            NgramsTable.select { NgramsTable.id eq position }
+                .limit(1)
+                .map { makeThreeGram(it) }
+                .first()
         }
     }
 
@@ -40,5 +36,22 @@ class ThreeGramDao(databaseUrl: String, databaseUser: String, databasePassword: 
                 }
             }
         }
+    }
+
+    fun leaders(count: Int) = transaction {
+        NgramsTable.select { NgramsTable.votes greater 0 }
+            .orderBy(NgramsTable.votes, SortOrder.DESC)
+            .limit(count)
+            .map { makeThreeGram(it) }
+    }
+
+    private fun makeThreeGram(it: ResultRow): ThreeGram {
+        return ThreeGram(
+            it[NgramsTable.id],
+            it[NgramsTable.n1],
+            it[NgramsTable.n2],
+            it[NgramsTable.n3],
+            it[NgramsTable.votes]
+        )
     }
 }

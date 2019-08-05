@@ -47,6 +47,11 @@ fun Application.module(testing: Boolean = false) {
             call.respondText(gson.toJson(threeGram), contentType = ContentType.Application.Json)
         }
 
+        get("/ngram/leaders") {
+            call.respondText(gson.toJson(threeGramDao.leaders(25)),
+                contentType = ContentType.Application.Json)
+        }
+
         post("/ngram/advance") {
             position.advance()
             call.respond(HttpStatusCode.NoContent)
